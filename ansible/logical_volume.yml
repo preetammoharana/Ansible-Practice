@@ -1,0 +1,78 @@
+---
+- hosts: "{{ hosts_prompt }}" ## This will get from "hosts_promt" as an input of any Hostname or Host group
+  gather_facts: no
+  connection: ssh
+
+  vars_prompt:
+   - name: "hosts_prompt" ## Host where playbook about to play
+     prompt: "Enter the Host or Host group need to run with this Playbook"
+     private: no
+
+   - name: "disk_name" ## Which disk we are using to create a partition for a logical volume. eg(/dev/sdb,/dev/sdc)
+     prompt: "Disk used for creating partition"
+     private: no
+
+   - name: "pvs_name" ## Disk after partition
+     prompt: "Disk name after creating with partition"
+     private: no
+
+   - name: "vg_name" ## Name of Volume group about to create.
+     prompt: "Enter VG name to be created"
+     private: no
+
+   - name: "lv_name" ## Name of Logical Volume about to create.
+     prompt: "Enter LV name to be created"
+     private: no
+
+   - name: "file_system" ## What type of filesystem it can be ext3, ext4 or xfs etc.
+     prompt: "Type of file system required?"
+     private: no
+
+   - name: "mount_point" ## In what name mount point should be created.
+     prompt: "Where need to mount?"
+     private: no
+
+  tasks:
+   - name: Create Partition for "{{ mount_point }}" file system
+     remote_user: ansible
+     become: yes
+     become_method: sudo
+     shell:
+       /bin/echo -e "n\np\n1\n\n\nt\n8e\nw" | sudo fdisk "{{ disk_name }}" ## Create the partition on a disk.
+
+   - name: Create VG for vg_u01
+     remote_user: ansible
+     become: yes
+     become_method: sudo
+     lvg:
+       vg: "{{ vg_name }}" ## Name of Volume group.
+       pvs: "{{ pvs_name }}" ## Physical Volume created using partition eg (/dev/sdb1 or /dev/sdc1)
+       pesize: 8
+
+   - name: Create LVM lv_u01 for "{{ mount_point }}" file system.
+     remote_user: ansible
+     become: yes
+     become_method: sudo
+     lvol:
+       vg: "{{ vg_name }}"
+       lv: "{{ lv_name }}" ## Name of Logical volume need to be created
+       size: 100%FREE ## All the PE's in Volume group will be used for creating the logical volume.
+
+   - name: Create the file system on newly created Logical volume for "{{ mount_point }}".
+     remote_user: ansible
+     become: yes
+     become_method: sudo
+     filesystem:
+       fstype: "{{ file_system }}" ## What type of filesystem required eg:(ext3, ext4, xfs etc.)
+       dev: "/dev/mapper/{{ vg_name }}-{{ lv_name }}" ## Full related path of device mapper to be created with creating FS.
+
+   - name: Mount the created filesystem ## This is to create the FSTAB entry and mount the Filesystem.
+     remote_user: ansible
+     become: yes
+     become_method: sudo
+     mount:
+       path: "{{ mount_point }}" ## Mount point where to mount the FS.
+       src: "/dev/mapper/{{ vg_name }}-{{ lv_name }}" ## Full related path of device mapper to be mounted under mount point.
+       fstype: "{{ file_system }}" ## Filesystem type
+       opts: rw,noatime,noexec,nodev,nosuid ## Mount options
+       state: mounted

@@ -1,0 +1,71 @@
+---
+- hosts: testserver
+  become: true
+  become_method: sudo
+  become_user: root
+  remote_user: devops
+
+  vars_prompt:
+    - name: "raw_disks"
+      prompt: "Raw disk used for create a Physical Volume"
+      private: no
+
+    - name: "vg_name"
+      prompt: "Name of the Volume Group"
+      private: no
+
+    - name: "lv_name"
+      prompt: "Name of the logical Volume"
+      private: no
+
+    - name: "require_lv_size"
+      prompt: "Size of Logical volume to be created."
+      private: no
+
+    - name: "fs"
+      prompt: "Type of filesystem need to be created."
+      private: no
+
+    - name: "mount_point"
+      prompt: "Mount the filesystem under."
+      private: no
+
+  tasks:
+
+    - name: Create the "{{ vg_name }}" Volume group.
+      lvg:
+        pvs: "/dev/{{ raw_disks }}"
+        vg: "{{ vg_name }}"
+        pesize: "8"
+        pv_options: '-Z y'
+        force: no
+        state: present
+
+    - name: Create the "{{ lv_name }}" Logical Volume.
+      lvol:
+        vg: "{{ vg_name }}"
+        lv: "{{ lv_name }}"
+        size: "{{ require_lv_size }}"
+        active: yes
+        force: no
+        state: present
+
+    - name: Create a "{{ fs }}" filesystem on lvm "/dev/mapper/{{ vg_name}}-{{ lv_name}}".
+      filesystem:
+        fstype: "{{ fs }}"
+        dev: "/dev/mapper/{{ vg_name }}-{{ lv_name }}"
+        force: no
+
+    - name: Create a directory to mount the filesystem.
+      file:
+        path: "{{ mount_point }}"
+        state: directory
+        mode: '0755'
+
+    - name: Mount the created "{{ fs }}" filesystem.
+      mount:
+        path: "{{ mount_point }}"
+        src: "/dev/mapper/{{ vg_name}}-{{ lv_name}}"
+        fstype: "{{ fs }}"
+        opts: rw,nosuid,noexec
+        state: mounted

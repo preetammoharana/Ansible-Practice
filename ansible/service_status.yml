@@ -1,0 +1,24 @@
+---
+- hosts: testserver
+  become: yes
+  tasks:
+      - name: Stopping Service
+        service: name=rsyslog state=stopped
+
+      - name: Service status
+        shell: systemctl status rsyslog
+        register: servcstat
+
+      - name: Copying
+        copy:
+            content: "{{ servcstat.stdout }}"
+            dest: /home/mansukhl/playbooks/patching/email.log
+        delegate_to: localhost
+
+      - name: Email notification
+        mail:
+        subject: 'Ansible-report'
+        to: 'pratik.****@gmail.com'
+        body: 'test email'
+        attach: /home/mansukhl/playbooks/patching/email.log
+        delegate_to: localhost

@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  become: yes
+  become_method: sudo
+  tasks:
+    - name: getting selinux status
+      command: getenforce
+      register: result
+
+    - name: removing old status file
+      local_action: file path={{ playbook_dir }}/{{ inventory_hostname }}-selinux-{{ result.stdout }} state=absent
+
+    - name: saving selinux status
+      local_action: file path={{ playbook_dir }}/{{ inventory_hostname }}-selinux-{{ result.stdout }} state=touch

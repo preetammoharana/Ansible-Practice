@@ -1,0 +1,11 @@
+● inetd.service - Internet superserver
+   Loaded: loaded (/lib/systemd/system/inetd.service; enabled; vendor preset: enabled)
+   Active: active (running) since Tue 2020-06-16 10:45:34 IST; 1h 2min ago
+     Docs: man:inetd(8)
+ Main PID: 731 (inetd)
+    Tasks: 1 (limit: 2332)
+   CGroup: /system.slice/inetd.service
+           └─731 /usr/sbin/inetd
+
+Jun 16 10:45:34 preetam-linux systemd[1]: Starting Internet superserver...
+Jun 16 10:45:34 preetam-linux systemd[1]: Started Internet superserver.

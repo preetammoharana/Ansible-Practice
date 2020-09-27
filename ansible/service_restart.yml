@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  gather_facts: false
+
+  tasks:
+          - name: Restart service httpd, in all cases
+            service:
+                    name: inetd
+                    state: restarted

@@ -1,0 +1,27 @@
+---
+- hosts: testserver
+  become: true
+  tasks:
+
+          - name: add user
+
+            user:
+                    name={{ item }}
+                    state=present
+                    groups=sudo
+                    password="$6$N1L4WKVz$I50QRpKSm7EuhhEBJ3Bwjrx16gKKaeJAkaygEic3SSlncz0GwGrTYAFLuynAeKwSX7KZcCJlNML8ZAOwkPfOE1"
+                    shell=/bin/bash
+            with_items:
+                    -demouser1
+                    -demouser2
+                    -demouser3
+
+            tags: add_new_user
+          - name: delete several user
+            user:
+                    name={{ item }}
+                    state=absent
+            with_items:
+                    -demouser2
+                    -demouser3
+            tags: remove_user

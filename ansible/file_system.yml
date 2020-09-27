@@ -1,0 +1,66 @@
+---
+- hosts: 127.0.0.1
+
+  user: root
+
+  sudo: yes
+
+  connection: local
+
+  tasks:
+
+    - name: create filesystem on /dev/vdb
+
+      filesystem:
+
+      fstype: ext4
+
+      dev: /dev/vdb
+
+    - name: create filesystem on /dev/vdb
+
+      filesystem:
+
+      fstype: ext4
+
+      dev: /dev/vdc
+
+    - name: create filesystem on /dev/vdb
+
+      filesystem:
+
+      fstype: ext4
+
+      dev: /dev/vdd
+
+    - name: create a primary partition
+
+      parted:
+
+      device: /dev/vdb
+
+      number: 1
+
+    - name: test
+
+      state: present
+
+    - name: create a primary partition
+
+      parted:
+
+      device: /dev/vdc
+
+      number: 1
+
+      state: present
+
+    - name: create a primary partition
+
+      parted:
+
+      device: /dev/vdd
+
+      number: 1
+
+      state: present

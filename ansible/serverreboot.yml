@@ -1,0 +1,19 @@
+---
+- hosts: all
+  become: yes
+
+  tasks:
+   - name: Check the uptime
+     shell: uptime
+     register: UPTIME_PRE_REBOOT
+
+   - debug: msg={{UPTIME_PRE_REBOOT.stdout}}
+
+   - name: Unconditionally reboot the machine with all defaults
+     reboot:
+
+   - name: Check the uptime after reboot
+     shell: uptime
+     register: UPTIME_POST_REBOOT
+
+   - debug: msg={{UPTIME_POST_REBOOT.stdout}}

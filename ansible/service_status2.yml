@@ -1,0 +1,13 @@
+---
+- hosts: testserver
+  become: yes
+  tasks:
+  - name: ensure that services are running
+service:
+  name: “{{ item }}”
+  state: started
+  enabled: yes
+with_items:
+  - firewalld
+  - fail2ban
+  - opennebula

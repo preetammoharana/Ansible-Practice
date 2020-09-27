@@ -1,0 +1,7 @@
+---
+- hosts: testserver
+  become: true
+  gather_facts: false
+  tasks:
+    - name: CPU Load
+      shell: ps -eo pid,ppid,cmd,%mem,%cpu --sort=-%mem | head >> /home/preetam/Desktop/stautus_check/disk_uti.txt
